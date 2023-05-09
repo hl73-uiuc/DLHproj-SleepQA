@@ -57,7 +57,10 @@ docker run --gpus '"device=4,5,6,7"' --name dpr02 -v /DATA/tmpdata_hk:/data -itd
 ```
 
 ### 6. Training code + command
+SleepQA provides the dataset of questions and answers about sleep health.
+I used the DPR for the training and evaluation of the models. (https://github.com/facebookresearch/DPR)
 DPR (Dense Passage Retrieval) is a framework that efficiently searches for information in large amounts of text. The Biencoder in DPR consists of a question encoder and a document encoder, which each convert the question and document into vectors to identify highly relevant documents. The Extractive Reader then extracts accurate answers to questions based on the documents returned by the Biencoder. Both the question and document are used as inputs to extract the answer.
+
 I changed the hyperparameter from the yaml file of Biencoder and Extractive reader.
 I used two models such as BioBERT and ClinicialBERT.
 This stage is processed in `DPR-main` directory.
