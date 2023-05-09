@@ -146,6 +146,10 @@ python eval/__main__.py
 ### 8. Pretrained model
 The size of the pretrained models is too big (above 100GB) so that I could not upload it.
 
-### 9 .Table of results
-
-
+### 9. Table of results
+|Role|Model|Batch Size|Learning rate|Num train epochs|Avg runtime for each epoch|EM score|
+|---|---|---|---|---|---|---|
+|Biencoder|Clinical BERT|32|2e-5|20|4min 55sec||
+|Extractive Reader|Clinical BERT|32|1e-5|20|2min 24sec|53.60|
+|Biencoder|BioBERT|32|2e-5|20|4min 47sec|테스트3|
+|Extractive Reader|BioBERT|32|1e-5|20|2min 32sec||
