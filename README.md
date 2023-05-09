@@ -5,7 +5,7 @@
 ### 1. Citation to the original paper
 Iva Bojic, Qi Chwen Ong, Megh Thakkar, Esha Kamran, Irving Yu Le Shua, Rei Ern Jaime Pang, Jessica Chen, Vaaruni Nayak, Shafiq Joty, Josip Car. SleepQA: A Health Coaching Dataset on Sleep for Extractive Question Answering. Proceedings of Machine Learning for Health (ML4H) 2022 Workshop.
 
-### 2. Link to the original paper’s repo (if applicable)
+### 2. Link to the original paper’s repo
 https://github.com/IvaBojic/SleepQA
 
 ### 3. Dependencies
@@ -14,7 +14,7 @@ https://github.com/IvaBojic/SleepQA
 (2) Installation by apt-get
 openjdk-11-jdk, git-lfs
 
-● Data download instruction
+### 4. Data download instruction
 Datas are downloaded from https://github.com/IvaBojic/SleepQA
 ```
 sleep_train:
@@ -34,12 +34,110 @@ sleep_open:
   file: "../../../../data/training/open_questions.csv"
 ```
 
+### 5. Preprocessing code + command 
+I built the docker image. 
+```
+### Dockerfile
+FROM nvcr.io/nvidia/pytorch:21.11-py3
+WORKDIR /data
+COPY SleepQA/DPR-main /data/SleepQA/DPR-main
+RUN pip install /data/SleepQA/DPR-main
+RUN python -m spacy download en_core_web_sm
+RUN pip install pyserini
+RUN apt-get update && apt-get install -y openjdk-11-jdk
+RUN apt-get install -y git-lfs
+CMD ["/bin/bash"]
+```
+I created two containers using the image that can utilize 4 GPUs each.
+```
+docker build -t dpr-container .
+docker run --gpus=4 --name dpr01 -v /DATA/tmpdata_hk:/data -itd dpr-container 
+docker run --gpus '"device=4,5,6,7"' --name dpr02 -v /DATA/tmpdata_hk:/data -itd dpr-container 
+```
 
-● Preprocessing code + command 
-I
+### 6. Training code + command
+DPR (Dense Passage Retrieval) is a framework that efficiently searches for information in large amounts of text. The Biencoder in DPR consists of a question encoder and a document encoder, which each convert the question and document into vectors to identify highly relevant documents. The Extractive Reader then extracts accurate answers to questions based on the documents returned by the Biencoder. Both the question and document are used as inputs to extract the answer.
+I changed the hyperparameter from the yaml file of Biencoder and Extractive reader.
+I used two models such as BioBERT and ClinicialBERT.
+```
+### biencoder conf
+conf/biencoder_train_cfg.yaml
+  - encoder: hf_biobert, hf_clinicalBERT
 
-● Training code + command (if applicable)
-● Evaluation code + command (if applicable)
-● Pretrained model (if applicable)
+conf/train/biencoder_local.yaml
+  - dev_batch_size: 32 (previous value was 16)
+  - learning_rate: 2e-5
+  - num_train_epochs: 20 (previous value was 30)
+  
+### extractive reader conf
+conf/extractive_reader_train_cfg.yaml
+  - encoder: hf_biobert, hf_clinicalBERT
+
+conf/train/extractive_reader_default.yaml
+  - dev_batch_size: 32 (previous value was 16)
+  - learning_rate: 1e-5 (previous value was 2e-5)
+  - num_train_epochs: 20 (previous value was 30)
+```
+
+I ran the training of the models.
+I used the PyTorch to parallelize the computation across 4 GPUs.
+```
+### biencoder training
+python -m torch.distributed.launch --nproc_per_node=4 \
+train_dense_encoder.py \
+train=biencoder_local \
+train_datasets="/data/SleepQA/data/training/sleep-train.json" \
+dev_datasets="/data/SleepQA/data/training/sleep-dev.json" \
+output_dir="train_dense_encoder/"
+
+### extractive reader training
+python -m torch.distributed.launch --nproc_per_node=4 \
+train_extractive_reader.py \
+encoder.sequence_length=300 \
+train_files="/data/SleepQA/data/training/oracle/sleep-train.json" \
+dev_files="/data/SleepQA/data/training/oracle/sleep-dev.json"  \
+output_dir="biobert/reader"
+```
+
+### 7. Evaluation code + command 
+I saved the results of inferencing from trained models.
+First, I extracted feature vectors with the biencoder.
+```
+python generate_dense_embeddings.py \
+    model_file="/data/SleepQA/DPR-main/outputs/2023-05-08/14-14-01/train_dense_encoder/dpr_biencoder.19" \
+    ctx_src="dpr_sleep" \
+    out_file="/data/SleepQA/models/processed/encoder-clinical"   
+```
+
+Next, I searched for questions and save the results in a CSV file with the biencoder.
+```
+python dense_retriever.py \
+    model_file="/data/SleepQA/DPR-main/outputs/2023-05-08/14-14-01/train_dense_encoder/dpr_biencoder.19"\
+    encoded_ctx_files=["/data/SleepQA/models/processed/encoder-clinical_0"] \
+    out_file="/data/SleepQA/models/processed/retriever-clinical.csv"
+```
+
+Finally, I saved the answers with the extractvie reader
+```
+python -m torch.distributed.launch --nproc_per_node=4 \
+  train_extractive_reader.py \
+  encoder.sequence_length=300 \
+  passages_per_question_predict=100 \
+  eval_top_docs=[10,20,40,50,80,100] \
+  dev_files="/data/SleepQA/data/training/oracle/sleep-dev.json"\
+  train.dev_batch_size=16 \
+  model_file="/data/SleepQA/DPR-main/outputs/2023-05-08/09-02-18/ClinicalBERT/reader/dpr_extractive_reader.10.500" \
+  prediction_results_file="/data/SleepQA/models/processed/reader-clinical.csv" 
+```
+
+Then, I converted the DPR checkpoints to the PyTorch model.
+```
+python convert_dpr_original_checkpoint_to_pytorch.py --type question_encoder --src pipeline1/dpr_biencoder.19 --dest pytorch/question_encoder
+
+python convert_dpr_original_checkpoint_to_pytorch.py --type reader --src pipeline1_baseline/cp_models/dpr_extractive_reader.7.59 --dest pytorch/reader
+```
+
+
+### 8. Pretrained model (if applicable)
 ● Table of results (no need to include additional experiments, but main reproducibility
 result should be included)
