@@ -52,7 +52,7 @@ CMD ["/bin/bash"]
 I created two containers using the image that can utilize 4 GPUs each.
 ```
 docker build -t dpr-container .
-docker run --gpus=4 --name dpr01 -v /DATA/tmpdata_hk:/data -itd dpr-container 
+docker run --gpus '"device=0,1,2,3"' --name dpr01 -v /DATA/tmpdata_hk:/data -itd dpr-container 
 docker run --gpus '"device=4,5,6,7"' --name dpr02 -v /DATA/tmpdata_hk:/data -itd dpr-container 
 ```
 
