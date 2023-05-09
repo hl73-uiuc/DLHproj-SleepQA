@@ -1,6 +1,7 @@
 ## Reproducibility Project - SleepQA : A Health Coaching Dataset on sleep for Extractive Question Answering
 - Written by Kihyuk Song and Hyunkyung Lee
 - Subject: CS598 Deep Learning for Healthcare
+- Jupyter notebook: DLHproj-SleepQA.ipynb
 
 ### 1. Citation to the original paper
 Iva Bojic, Qi Chwen Ong, Megh Thakkar, Esha Kamran, Irving Yu Le Shua, Rei Ern Jaime Pang, Jessica Chen, Vaaruni Nayak, Shafiq Joty, Josip Car. SleepQA: A Health Coaching Dataset on Sleep for Extractive Question Answering. Proceedings of Machine Learning for Health (ML4H) 2022 Workshop.
