@@ -132,6 +132,38 @@ python -m torch.distributed.launch --nproc_per_node=4 \
   prediction_results_file="/data/SleepQA/models/processed/reader-clinical.csv" 
 ```
 
+This is the part of the results file. 
+prediction_results_file="/data/SleepQA/models/processed/reader-clinical.csv"
+```
+    {
+        "question": "how are flippable mattresses constructed?",
+        "gold_answers": [
+            "using a different comfort layer on each side of the support core, allowing either side of the mattress to be used as the top"
+        ],
+        "predictions": [
+            {
+                "top_k": 10,
+                "prediction": {
+                    "text": "using a different comfort layer on each side of the support core",
+                    "score": 21.362292289733887,
+                    "relevance_score": 3.7556169033050537,
+                    "passage_idx": 0,
+                    "passage": "flippable mattresses are constructed using a different comfort layer on each side of the support core, allowing either side of the mattress to be used as the top. most flippable mattresses have a different firmness level on each side. in flippable mattresses, the support core consists of the firmer layers in the middle of the mattress, as well as the comfort layers from the side that's placed face - down. the vast majority of mattresses have a support core containing either steel coils, high - density polyfoam, or latex. more rarely, shoppers may come across a model containing air or water chambers in the support core."
+                }
+            },
+            {
+                "top_k": 20,
+                "prediction": {
+                    "text": "using a different comfort layer on each side of the support core",
+                    "score": 21.362292289733887,
+                    "relevance_score": 3.7556169033050537,
+                    "passage_idx": 0,
+                    "passage": "flippable mattresses are constructed using a different comfort layer on each side of the support core, allowing either side of the mattress to be used as the top. most flippable mattresses have a different firmness level on each side. in flippable mattresses, the support core consists of the firmer layers in the middle of the mattress, as well as the comfort layers from the side that's placed face - down. the vast majority of mattresses have a support core containing either steel coils, high - density polyfoam, or latex. more rarely, shoppers may come across a model containing air or water chambers in the support core."
+                }
+            },
+```
+
+
 Then, I converted the DPR checkpoints to the PyTorch model.
 This stage is processed in `models` directory.
 ```
@@ -151,9 +183,12 @@ python eval/__main__.py
 The size of the pretrained models is too big (above 100GB) so that I could not upload it.
 
 ### 9. Table of results
+This is the results of two models.
 |Role|Model|Batch Size|Learning rate|Num train epochs|Avg runtime for each epoch|EM score|
 |---|---|---|---|---|---|---|
 |Biencoder|Clinical BERT|32|2e-5|20|4min 55sec||
 |Extractive Reader|Clinical BERT|32|1e-5|20|2min 24sec|53.60|
 |Biencoder|BioBERT|32|2e-5|20|4min 47sec||
 |Extractive Reader|BioBERT|32|1e-5|20|2min 32sec|58.40|
+
+
