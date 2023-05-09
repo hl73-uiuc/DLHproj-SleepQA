@@ -10,9 +10,9 @@ Iva Bojic, Qi Chwen Ong, Megh Thakkar, Esha Kamran, Irving Yu Le Shua, Rei Ern J
 https://github.com/IvaBojic/SleepQA
 
 ### 3. Dependencies
-(1) Installation by pip
+1. Installation by pip
 "pyserini", "faiss-cpu>=1.6.1", "filelock", "numpy", "regex", "torch>=1.5.0", "transformers>=4.3", "tqdm>=4.27", "wget", "spacy>=2.1.8", "hydra-core>=1.0.0", "omegaconf>=2.0.1", "jsonlines", "soundfile", "editdistance"
-(2) Installation by apt-get
+2. Installation by apt-get
 openjdk-11-jdk, git-lfs
 
 ### 4. Data download instruction
