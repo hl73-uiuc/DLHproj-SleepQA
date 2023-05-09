@@ -86,22 +86,55 @@ conf/train/extractive_reader_default.yaml
 
 I ran the training of the models.
 I used the PyTorch to parallelize the computation across 4 GPUs.
+
+This is the command of the Biencoder training.
 ```
-### biencoder training
 python -m torch.distributed.launch --nproc_per_node=4 \
 train_dense_encoder.py \
 train=biencoder_local \
 train_datasets="/data/SleepQA/data/training/sleep-train.json" \
 dev_datasets="/data/SleepQA/data/training/sleep-dev.json" \
 output_dir="train_dense_encoder/"
+```
+This is the part of the log of the Biencoder training.
+```
+  encoder_model_type: hf_bert
+  pretrained_model_cfg: emilyalsentzer/Bio_ClinicalBERT
+  train:
+  dev_batch_size: 32
+  learning_rate: 2.0e-05
+  num_train_epochs: 20
+  train_datasets: /data/SleepQA/data/training/sleep-train.json
+[2023-05-08 15:55:33,723][root][INFO] - Saved checkpoint to train_dense_encoder/dpr_biencoder.19
+[2023-05-08 15:55:33,723][root][INFO] - Av Loss per epoch=0.017397
+[2023-05-08 15:55:33,723][root][INFO] - epoch total correct predictions=3984
+[2023-05-08 15:55:33,724][root][INFO] - Training finished. Best validation checkpoint train_dense_encoder/dpr_biencoder.19
+```
 
-### extractive reader training
+This is the command of the Extractive Reader training.
+```
 python -m torch.distributed.launch --nproc_per_node=4 \
 train_extractive_reader.py \
 encoder.sequence_length=300 \
 train_files="/data/SleepQA/data/training/oracle/sleep-train.json" \
 dev_files="/data/SleepQA/data/training/oracle/sleep-dev.json"  \
 output_dir="biobert/reader"
+```
+This is the part of the logs of the Extractive Reader training.
+```
+  encoder_model_type: hf_bert
+  pretrained_model_cfg: emilyalsentzer/Bio_ClinicalBERT
+  train:
+  dev_batch_size: 32
+  learning_rate: 2.0e-05
+  num_train_epochs: 20
+[2023-05-08 09:52:36,294][root][INFO] - n=50    EM 53.60
+[2023-05-08 09:52:36,296][root][INFO] - Finished iterating, iteration=1000, shard=3
+[2023-05-08 09:52:36,296][root][INFO] - Av Loss per epoch=0.011445
+[2023-05-08 09:52:37,863][root][INFO] - Saved checkpoint to ClinicalBERT/reader/dpr_extractive_reader.19.1000
+[2023-05-08 09:52:37,864][root][INFO] - Finished iterating, iteration=1000, shard=0
+[2023-05-08 09:52:37,864][root][INFO] - Av Loss per epoch=0.038780
+[2023-05-08 09:52:37,864][root][INFO] - Training finished. Best validation checkpoint ClinicalBERT/reader/dpr_extractive_reader.10.500
 ```
 
 ### 7. Evaluation code + command 
@@ -121,6 +154,25 @@ python dense_retriever.py \
     model_file="/data/SleepQA/DPR-main/outputs/2023-05-08/14-14-01/train_dense_encoder/dpr_biencoder.19"\
     encoded_ctx_files=["/data/SleepQA/models/processed/encoder-clinical_0"] \
     out_file="/data/SleepQA/models/processed/retriever-clinical.csv"
+```
+This is the part of the results file. 
+out_file="/data/SleepQA/models/processed/retriever-clinical.csv"
+```
+  {
+        "question": "what can lack of sleep affect?",
+        "answers": [
+            "hormones that regulate appetite such as ghrelin and leptin, causing you to feel hungrier and consume more during the day"
+        ],
+        "ctxs": [
+            {
+                "id": "sleep:2144",
+                "title": "physical health and sleep: how are they connected",
+                "text": "the relationship between sleep and overall physical health is well-documented. sleep allows both the body and brain to recover during the night. a good night's rest ensures you'll feel refreshed and alert when you wake up in the morning. sleep deficiency will not only leave you feeling tired, but can increase your risk for a wide range of diseases and health problems. these include obesity, heart disease, high blood pressure, diabetes, and stroke. a lack of sleep also poses a threat to your physical safety. studies suggest up to 19% of u.s. adults don't get enough sleep on a regular basis.",
+                "score": "162.50386",
+                "has_answer": false
+            }
+        ]
+    },
 ```
 
 Finally, I saved the answers with the extractvie reader
