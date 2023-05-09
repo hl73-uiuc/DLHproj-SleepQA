@@ -137,7 +137,15 @@ python convert_dpr_original_checkpoint_to_pytorch.py --type question_encoder --s
 python convert_dpr_original_checkpoint_to_pytorch.py --type reader --src pipeline1_baseline/cp_models/dpr_extractive_reader.7.59 --dest pytorch/reader
 ```
 
+I made the QA pipeline system and evaluate this using the results csv file and PyTorch model.
+```
+python qa_system.py
+python eval/__main__.py
+```
 
-### 8. Pretrained model (if applicable)
-● Table of results (no need to include additional experiments, but main reproducibility
-result should be included)
+### 8. Pretrained model
+The size of the pretrained models is too big (above 100GB) so that I could not upload it.
+
+### 9 .Table of results
+
+
