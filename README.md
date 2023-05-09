@@ -59,6 +59,7 @@ docker run --gpus '"device=4,5,6,7"' --name dpr02 -v /DATA/tmpdata_hk:/data -itd
 DPR (Dense Passage Retrieval) is a framework that efficiently searches for information in large amounts of text. The Biencoder in DPR consists of a question encoder and a document encoder, which each convert the question and document into vectors to identify highly relevant documents. The Extractive Reader then extracts accurate answers to questions based on the documents returned by the Biencoder. Both the question and document are used as inputs to extract the answer.
 I changed the hyperparameter from the yaml file of Biencoder and Extractive reader.
 I used two models such as BioBERT and ClinicialBERT.
+This stage is processed in `DPR-main` directory.
 ```
 ### biencoder conf
 conf/biencoder_train_cfg.yaml
@@ -101,6 +102,7 @@ output_dir="biobert/reader"
 
 ### 7. Evaluation code + command 
 I saved the results of inferencing from trained models.
+This stage is processed in `DPR-main` directory.
 First, I extracted feature vectors with the biencoder.
 ```
 python generate_dense_embeddings.py \
@@ -131,6 +133,7 @@ python -m torch.distributed.launch --nproc_per_node=4 \
 ```
 
 Then, I converted the DPR checkpoints to the PyTorch model.
+This stage is processed in `models` directory.
 ```
 python convert_dpr_original_checkpoint_to_pytorch.py --type question_encoder --src pipeline1/dpr_biencoder.19 --dest pytorch/question_encoder
 
@@ -138,6 +141,7 @@ python convert_dpr_original_checkpoint_to_pytorch.py --type reader --src pipelin
 ```
 
 I made the QA pipeline system and evaluate this using the results csv file and PyTorch model.
+This stage is processed in `models` and `eval` directory.
 ```
 python qa_system.py
 python eval/__main__.py
