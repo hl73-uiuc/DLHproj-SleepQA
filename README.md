@@ -1,3 +1,3 @@
-# Reproducibility Project - SleepQA : A Health Coaching Dataset on sleep for Extractive Question Answering
-## Kihyuk Song and Hyunkyung Lee
-## CS598 Deep Learning for Healthcare
+#### Reproducibility Project - SleepQA : A Health Coaching Dataset on sleep for Extractive Question Answering
+- Written by Kihyuk Song and Hyunkyung Lee
+- Subject: CS598 Deep Learning for Healthcare
